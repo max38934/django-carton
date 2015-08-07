@@ -10,10 +10,11 @@ class CartItem(object):
     """
     A cart item, with the associated product, its quantity and its price.
     """
-    def __init__(self, product, quantity, price):
+    def __init__(self, product, quantity, price, extra_product_price):
         self.product = product
         self.quantity = int(quantity)
         self.price = Decimal(str(price))
+        self.extra_product_price = Decimal(str(extra_product_price))
 
     def __repr__(self):
         return u'CartItem Object (%s)' % self.product
@@ -23,6 +24,7 @@ class CartItem(object):
             'product_pk': self.product.pk,
             'quantity': self.quantity,
             'price': str(self.price),
+            'extra_product_price': str(self.extra_product_price),
         }
 
     @property
@@ -30,7 +32,7 @@ class CartItem(object):
         """
         Subtotal for the cart item.
         """
-        return self.price * self.quantity
+        return (self.price * self.quantity) + self.extra_product_price
 
 
 class Cart(object):
@@ -51,7 +53,7 @@ class Cart(object):
             for product in products_queryset:
                 item = cart_representation[str(product.pk)]
                 self._items_dict[product.pk] = CartItem(
-                    product, item['quantity'], Decimal(item['price'])
+                    product, item['quantity'], Decimal(item['price']), Decimal(item['extra_product_price'])
                 )
 
     def __contains__(self, product):
@@ -85,10 +87,11 @@ class Cart(object):
         self.session[self.session_key] = self.cart_serializable
         self.session.modified = True
 
-    def add(self, product, price=None, quantity=1):
+    def add(self, product, price=None, quantity=1, extra_product_price=0):
         """
         Adds or creates products in cart. For an existing product,
         the quantity is increased and the price is ignored.
+        "extra_product_price" - additional price for each product in Cart (not depend from quantity)
         """
         quantity = int(quantity)
         if quantity < 1:
@@ -98,7 +101,7 @@ class Cart(object):
         else:
             if price == None:
                 raise ValueError('Missing price when adding to cart')
-            self._items_dict[product.pk] = CartItem(product, quantity, price)
+            self._items_dict[product.pk] = CartItem(product, quantity, price, extra_product_price)
         self.update_session()
 
     def remove(self, product):
