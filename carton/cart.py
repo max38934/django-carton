@@ -151,6 +151,19 @@ class Cart(object):
                 del self._items_dict[product.pk]
             self.update_session()
 
+    def set_extra_price(self, product, extra_product_price):
+        """
+        Sets the product's extra_price.
+        """
+        extra_price = int(extra_product_price)
+        if extra_price < 0:
+            raise ValueError('Extra price must be positive when updating cart')
+        if product in self.products:
+            self._items_dict[product.pk].extra_product_price = extra_price
+            if self._items_dict[product.pk].extra_product_price < 0:
+                self._items_dict[product.pk].extra_product_price = 0
+            self.update_session()
+
     @property
     def items(self):
         """
