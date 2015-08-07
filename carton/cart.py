@@ -32,6 +32,13 @@ class CartItem(object):
         """
         Subtotal for the cart item.
         """
+        return self.price * self.quantity
+
+    @property
+    def subtotal_with_extra_price(self):
+        """
+        Subtotal for the cart item.
+        """
         return (self.price * self.quantity) + self.extra_product_price
 
 
@@ -208,3 +215,10 @@ class Cart(object):
         The total value of all items in the cart.
         """
         return sum([item.subtotal for item in self.items])
+
+    @property
+    def total_with_extra_price(self):
+        """
+        The total value of all items in the cart + extra_product_price.
+        """
+        return sum([item.subtotal_with_extra_price for item in self.items])
